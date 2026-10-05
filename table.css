@@ -1,0 +1,196 @@
+/* The playing table is a viewport-sized workspace. Other pages remain documents. */
+:root { --table-gutter: clamp(16px, 1.6vw, 32px); }
+.masthead { max-width: none; padding: 8px var(--table-gutter); min-height: 68px; gap: 24px; }
+.brand h1 { font-size: 29px; }
+.header-button { min-height: 42px; font-size: 14px; }
+.nav-tab { min-height: 44px; font-size: 15px; }
+body[data-view="game"] main { max-width: none; padding: 12px var(--table-gutter); }
+body[data-view="game"] .site-footer { display: none; }
+.game-layout { grid-template-columns: clamp(290px, 19vw, 352px) minmax(0, 1fr) clamp(216px, 14vw, 264px); gap: clamp(16px, 1.5vw, 28px); align-items: start; }
+.game-sidebar { padding: 0; display: block; min-width: 0; max-width: none; margin: 0; }
+.game-sidebar, .play-surface, .game-actions { position: static; top: auto; grid-column: auto; grid-row: auto; order: initial; }
+.play-surface { display: flex; flex-direction: column; align-items: center; min-width: 0; width: min(100%, calc(100dvh - 196px)); justify-self: center; }
+.board-topline { width: 100%; min-height: 50px; padding: 0 2px 8px; gap: 8px; }
+.board-topline h2 { font-size: 25px; margin: 1px 0 0; }
+.board-topline .eyebrow { display: block; }
+.round-counter strong { font-size: 33px; }
+.board-stage { width: 100%; display: flex; justify-content: center; align-items: start; min-height: 0; }
+.board-frame { width: 100%; aspect-ratio: 1; height: auto; min-height: 0; max-height: none; background-image: url('./assets/woodland-table-square.png'); background-size: contain; border-radius: 8px; overflow: hidden; }
+.board-frame #board { inset: 9%; width: 82%; height: 82%; }
+.board-cover { inset: 9%; }
+.board-bottomline { width: 100%; margin: 10px 0 0; flex-wrap: nowrap; gap: 10px; }
+.legend { gap: 16px; font-size: 13px; }
+.zoom-controls { gap: 6px; font-size: 13px; }
+.zoom-controls button { height: 40px; min-width: 40px; }
+.status-line { font-size: 14px; line-height: 1.4; min-height: 20px; margin: 7px 0 0; max-width: 100%; }
+.game-actions { display: flex; flex-direction: column; gap: 12px; padding-top: 54px; min-width: 0; }
+.game-actions > .eyebrow { display: none; }
+.game-actions .table-action { min-height: 62px; font-size: 22px; padding: 14px 16px; gap: 12px; }
+.game-actions .speed-control { margin-top: 4px; font-size: 15px; padding: 18px 0 0; }
+.game-actions .fine { font-size: 13px; line-height: 1.6; }
+.game-actions .status-line { text-align: left; padding: 12px 14px; border-left: 3px solid #a7b28e; background: #e8e8d9; margin: 4px 0 0; }
+body[data-table-state="setup"] .game-actions .status-line { display: none; }
+.terrain-card { padding: 20px 0 0; margin-top: 8px; }
+.terrain-legend { display: grid; justify-content: start; gap: 12px; margin: 16px 0; font-size: 14px; }
+.terrain-legend i { width: 18px; height: 20px; flex: none; }
+.terrain-hint { text-align: left; margin: 0; }
+.map-details { margin-top: 18px; font-size: 13px; color: var(--muted); }
+.map-details summary { padding: 8px 0; min-height: 36px; }
+.board-caption { text-align: left; margin: 5px 0 10px; }
+.rabbit-plan { padding: 18px 0 0; }
+.rabbit-plan h3 { font-size: 21px; }
+.table-postcard { margin: 12px 0 0; padding-top: 18px; border-top: 1px solid var(--line); }
+.table-postcard img { width: 100%; height: auto; object-fit: contain; border-radius: 5px; }
+.table-postcard figcaption { font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--muted); margin: 12px 0 0; }
+body[data-table-state="playing"] .table-postcard, body[data-table-state="replay"] .table-postcard { display: none; }
+
+/* Setup has three short chapters and an always-available start action. */
+.setup-panel { display: flex; flex-direction: column; width: 100%; max-width: none; margin: 0; border-radius: 8px; }
+.setup-heading { padding: 22px 22px 16px; flex: none; }
+.setup-heading h2 { font-size: 29px; margin: 6px 0 0; }
+.setup-tabs { display: grid; grid-template-columns: repeat(3, 1fr); padding: 0 12px; border-bottom: 1px solid var(--line); flex: none; }
+.setup-tabs button { min-height: 46px; padding: 8px 2px; background: transparent; color: var(--muted); font-size: 14px; border-bottom: 3px solid transparent; }
+.setup-tabs button[aria-selected="true"] { color: var(--moss); border-color: var(--moss); font-weight: 700; }
+.setup-tabs button:hover { background: #e9e6d769; }
+.setup-scroll { padding: 20px 22px; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #bcb399 transparent; overscroll-behavior-y: contain; }
+.setup-intro { font-family: var(--serif); font-size: 19px; margin-bottom: 18px; }
+.setup-footer { flex: none; padding: 16px 22px 20px; border-top: 1px solid var(--line); background: #efe9db; margin-top: auto; }
+.setup-footer .fine { margin: 0 0 10px; font-size: 13px; }
+#start-game { margin: 0; min-height: 52px; font-size: 18px; display: flex; align-items: center; justify-content: space-between; }
+#start-game span { font-size: 25px; font-weight: normal; }
+.setup-page .settings-body { padding: 0; gap: 18px; }
+.setup-page .settings-body label { font-size: 15px; }
+.setup-page .settings-body .fine { font-size: 13px; }
+.setup-page .settings-body .wide { margin-top: 0; }
+.mode-switch { margin-bottom: 22px; padding: 4px; gap: 3px; }
+.mode-switch button { min-height: 63px; font-size: 16px; font-weight: 600; }
+.mode-switch button span { display: block; font-size: 10px; line-height: 1.5; font-weight: 400; margin-top: 4px; white-space: nowrap; }
+.human-role { margin-bottom: 22px; }
+.role-switch button { font-size: 14px; min-height: 46px; }
+.player-select { margin: 20px 0; grid-template-columns: 34px 1fr; column-gap: 12px; }
+.player-select select { font-size: 15px; min-height: 44px; }
+.player-select label { font-size: 18px; }
+#mode-description { font-size: 14px; min-height: 0; margin: 16px 0; }
+.agent-guide { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); padding: 13px 0 0; }
+.agent-guide summary { min-height: 30px; }
+.agent-guide .fine { font-size: 13px; }
+.setup-panel .strategy-mixer { margin: 16px 0 0; }
+.game-sidebar .primary, .game-sidebar .secondary { min-height: 46px; font-size: 15px; }
+.turn-panel { padding: 24px; }
+.turn-heading h2 { font-size: 25px; text-wrap: pretty; }
+.turn-panel .instruction { font-size: 16px; line-height: 1.65; min-height: 0; }
+.dice-tray { min-height: 64px; }
+.die-placeholder { font-size: 15px; }
+.action-stack { margin-top: 20px; }
+.replay-actions { grid-template-columns: 1fr; }
+.replay-button { min-height: 40px; font-size: 14px; }
+.game-sidebar #replay-panel label { margin-top: 20px; }
+.game-sidebar #replay-panel .instruction { min-height: 0; }
+.token circle { stroke-width: .12; }
+.token-letter { font-size: .83px; font-weight: 700; }
+
+@media (min-width: 1180px) {
+  body[data-view="game"] .game-layout { height: calc(100dvh - 96px); min-height: 440px; grid-template-rows: minmax(0, 1fr); }
+  .game-sidebar { height: 100%; min-height: 0; }
+  .setup-panel { max-height: 100%; }
+  .turn-panel, #replay-panel { max-height: 100%; overflow-y: auto; scrollbar-width: thin; }
+  .game-actions { max-height: 100%; overflow-y: auto; scrollbar-width: thin; }
+}
+@media (min-width: 1180px) and (max-height: 850px) {
+  .game-actions { padding-top: 56px; gap: 10px; }
+  .game-actions .table-action { min-height: 54px; font-size: 20px; }
+  .table-postcard { display: none; }
+  .setup-heading { padding-top: 17px; }
+  .setup-scroll { padding: 16px 20px; }
+  .setup-footer { padding: 12px 20px; }
+  .setup-intro { margin-bottom: 12px; }
+  .mode-switch, .human-role { margin-bottom: 16px; }
+  .player-select { margin: 14px 0; }
+  .turn-panel { padding: 20px; }
+  .turn-panel .instruction { font-size: 15px; line-height: 1.55; }
+}
+/* Tablet: the field retains first-class space; setup sits beside it. */
+@media (min-width: 760px) and (max-width: 1179px) {
+  .masthead { padding: 12px 18px; gap: 15px; }
+  .brand h1 { font-size: 24px; }
+  .brand-mark { width: 33px; height: 38px; font-size: 28px; }
+  .nav-tab { padding: 10px 13px; }
+  body[data-view="game"] main { padding: 16px; }
+  .game-layout { grid-template-columns: 280px minmax(0, 1fr); gap: 18px; }
+  .game-sidebar { grid-column: 1; grid-row: 1 / 3; }
+  .play-surface { grid-column: 2; grid-row: 1; width: min(100%, calc(100dvh - 202px)); }
+  .header-actions { position: static; }
+  .header-button:last-child { display: block; }
+  .header-button::after { content: none !important; }
+  .board-frame, .board-bottomline { width: 100%; }
+  .game-actions { grid-column: 2; grid-row: 2; display: grid; grid-template-columns: 1fr 1fr; padding: 0; align-self: start; gap: 12px; }
+  .game-actions .table-action { min-height: 54px; font-size: 19px; }
+  .game-actions .speed-control, .game-actions .status-line, .terrain-card, .rabbit-plan { grid-column: 1 / -1; }
+  .game-actions .terrain-legend { display: flex; justify-content: start; gap: 13px; }
+  .table-postcard { display: none; }
+  .setup-scroll { padding: 18px; }
+  .setup-footer, .setup-heading { padding-left: 18px; padding-right: 18px; }
+  .board-bottomline { flex-wrap: wrap; }
+  .game-sidebar .setup-panel { max-height: calc(100dvh - 112px); position: sticky; top: 16px; }
+  .legend { gap: 10px; }
+}
+/* Narrow screens become a single reading order, with the active action before the board. */
+@media (max-width: 759px) {
+  .masthead { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 14px; min-height: 0; }
+  .brand { gap: 8px; }
+  .brand h1 { font-size: 24px; letter-spacing: -.7px; }
+  .brand-mark { width: 29px; height: 34px; font-size: 26px; }
+  .edition-label { font-size: 8px; letter-spacing: 1.2px; }
+  .header-actions { position: static; gap: 5px; }
+  .header-button { font-size: 12px; min-height: 40px; padding: 6px 8px; border: 1px solid var(--line); }
+  .header-button::after { content: none !important; }
+  .header-button:last-child { display: block; }
+  .masthead nav { grid-column: 1 / -1; width: 100%; justify-content: stretch; }
+  .nav-tab { flex: 1; padding: 8px; min-height: 40px; }
+  body[data-view="game"] main { padding: 14px 12px 24px; }
+  .game-layout { display: flex; flex-direction: column; gap: 20px; }
+  .game-sidebar { width: 100%; display: block; }
+  .play-surface { width: 100%; order: 1; }
+  .game-actions { width: 100%; order: 2; display: grid; grid-template-columns: 1fr 1fr; padding: 0; gap: 12px; }
+  .game-actions .table-action { min-height: 54px; font-size: 18px; padding: 12px; gap: 8px; }
+  .game-actions .action-mark { width: 20px; height: 24px; }
+  .game-actions .speed-control, .game-actions .status-line, .terrain-card, .rabbit-plan { grid-column: 1 / -1; }
+  .game-actions .terrain-legend { display: flex; justify-content: start; font-size: 12px; gap: 12px; }
+  .terrain-legend i { width: 14px; height: 16px; }
+  .table-postcard { display: none; }
+  .setup-panel { max-height: min(700px, calc(100dvh - 168px)); min-height: 400px; }
+  .setup-heading { padding: 18px 20px 12px; }
+  .setup-heading h2 { font-size: 27px; }
+  .setup-tabs button { min-height: 42px; }
+  .setup-scroll { padding: 16px 20px; }
+  .setup-footer { padding: 12px 20px; }
+  .board-topline { min-height: 54px; }
+  .board-topline h2 { font-size: 25px; }
+  .board-frame, .board-bottomline { width: 100%; }
+  .board-bottomline { gap: 8px; flex-wrap: wrap; }
+  .zoom-controls { margin-left: auto; }
+  .legend { font-size: 12px; gap: 12px; }
+  .status-line { text-align: left; align-self: start; }
+  .turn-panel { padding: 18px 20px; }
+  .turn-heading { padding-bottom: 12px; }
+  .turn-heading h2 { font-size: 23px; }
+  .dice-tray { padding: 14px 0 4px; min-height: 0; }
+  .turn-panel .instruction { font-size: 14px; line-height: 1.5; margin: 12px 0; }
+  .action-stack { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .action-stack .wide { flex: 1; min-width: 130px; margin: 0; }
+  body[data-table-state="playing"] .action-stack:has(button:not([hidden])) { position: fixed; bottom: 0; left: 0; right: 0; z-index: 10; padding: 12px 16px max(12px, env(safe-area-inset-bottom)); margin: 0; background: var(--cream); border-top: 1px solid var(--line); box-shadow: 0 -4px 20px #352b2114; }
+  body[data-view="game"][data-table-state="playing"] main { padding-bottom: 98px; }
+  .move-budget { margin: 10px 0; padding: 6px 12px; }
+  .dig-progress { margin: 12px 0; }
+  .cover-card { padding: 16px; }
+  .cover-card h3 { font-size: 24px; }
+  .cover-card p { font-size: 14px; line-height: 1.5; }
+  .cover-card .primary { min-height: 44px; font-size: 14px; padding: 8px 14px; }
+}
+@media (max-width: 420px) {
+  .masthead { grid-template-columns: 1fr; }
+  .brand { justify-content: center; }
+  .header-actions { justify-content: center; grid-row: 3; }
+  .header-button { min-width: 94px; }
+  .setup-panel { max-height: min(700px, calc(100dvh - 214px)); }
+}
