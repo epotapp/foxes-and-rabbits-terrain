@@ -1,6 +1,6 @@
 import { gameFetch as fetch } from './transport.js';
 import { terrainFill, terrainSVG } from './terrain-art.js';
-import { straightContinuations, constructionLength, sandConnection } from './rules.js';
+import { straightPaths, constructionLength, sandConnection } from './rules.js';
 import { setupGifExport } from './gif-export.js';
 import { strategyMixer } from './strategy-mixer.js';
 import { DEFAULT_MIX, RABBIT_STRATEGIES } from './rabbit-strategies.js';
@@ -103,11 +103,14 @@ function previewGame() {
   const board = mapPreview?.board || meta.board;
   return { board, config: mapPreview?.config || meta.defaults, fox: board.foxStart, rabbit: board.rabbitStart, masks: [], visible: null, phase: 'setup', round: 0, dice: [], used: [], role: 'observer' };
 }
+function tunnelChoices(g) {
+  return straightPaths(g.board, g.origin, constructionLength(g.board, g.origin, g.dice[selectedDie]), g.masks);
+}
 function legalCells(g) {
   if (!isManual(g)) return [];
   if (g.phase === 'rabbit_dig') {
     if (!draft.length) draft = [g.origin];
-    return straightRules(g) ? straightContinuations(g.board, g.origin, constructionLength(g.board, g.origin, g.dice[selectedDie]), draft, g.masks)
+    return straightRules(g) ? tunnelChoices(g).map(path => path[1])
       : draft.length <= constructionLength(g.board, g.origin, g.dice[selectedDie]) ? g.board.neighbors[draft.at(-1)].filter(n => n >= 0) : [];
   }
   const from = g.phase === 'rabbit_move' ? g.rabbit : g.phase === 'fox_move' ? g.fox : null;
@@ -129,7 +132,7 @@ function renderBoard(g) {
   let svg = '<defs>';
   if (visible) svg += `<clipPath id="sight-clip">${[...visible].map(id => `<polygon points="${polygon(board.cells[id], 1.015)}"/>`).join('')}</clipPath>`;
   svg += '</defs>';
-  svg += board.cells.map(c => `<polygon data-cell="${c.id}" style="--terrain-fill:${terrainFill(board.terrain[c.id], c.id)}" class="hex terrain-${board.terrain[c.id]}${visible && !visible.has(c.id) ? ' fog' : ''}${legal.has(c.id) ? ' legal' : ''}${draft.includes(c.id) && g.phase === 'rabbit_dig' ? ' path' : ''}" points="${polygon(c)}" ${legal.has(c.id) ? `tabindex="0" role="button" aria-label="Move to hex ${c.col + 1}, ${c.row + 1}"` : ''}><title>${board.terrain[c.id]} · column ${c.col + 1}, row ${c.row + 1}</title></polygon>`).join('');
+  svg += board.cells.map(c => `<polygon data-cell="${c.id}" style="--terrain-fill:${terrainFill(board.terrain[c.id], c.id)}" class="hex terrain-${board.terrain[c.id]}${visible && !visible.has(c.id) ? ' fog' : ''}${legal.has(c.id) ? ' legal' : ''}${draft.includes(c.id) && g.phase === 'rabbit_dig' ? ' path' : ''}" points="${polygon(c)}" ${legal.has(c.id) ? `tabindex="0" role="button" aria-label="${g.phase === 'rabbit_dig' && straightRules(g) ? 'Build full tunnel toward' : 'Move to'} hex ${c.col + 1}, ${c.row + 1}"` : ''}><title>${board.terrain[c.id]} · column ${c.col + 1}, row ${c.row + 1}</title></polygon>`).join('');
   svg += board.cells.filter(c => !visible || visible.has(c.id)).map(c => terrainSVG(c, board.terrain[c.id])).join('');
   let segments = '', seen = new Set();
   for (let id = 0; id < board.cells.length; id++) {
@@ -187,7 +190,7 @@ function renderTurn() {
   else if (g.needsHandoff) { title = 'Pass the field'; instruction = `Pass to the ${role === 'fox' ? 'Fox' : 'Rabbit'}. Keep the board covered until the other player looks away.`; show('handoff-ready', true); text('handoff-ready', `Ready as ${role === 'fox' ? 'Fox' : 'Rabbit'}`); }
   else if (g.covered) { title = 'Field covered'; instruction = 'The Rabbit is building tunnels and moving. Your view will return at the start of the Fox’s turn.'; }
   else if (g.phase === 'rabbit_roll_tunnels') { title = 'Build 3 straight tunnels'; instruction = 'Roll three d6. Starting on ground adds +1 to every tunnel; starting on sand uses the die as rolled. Use every die in full. Each tunnel must add at least one new connection; overlap is allowed.'; }
-  else if (g.phase === 'rabbit_dig') { title = `Tunnels · ${g.used.filter(Boolean).length} / 3`; instruction = manual ? `Select a die, then click ${constructionLength(g.board, g.origin, g.dice[selectedDie])} hexes in one straight direction from r. Overlap is allowed, but each tunnel must add a new connection. Ground: d6 + 1. Sand: d6. Rock blocks digging. Only complete legal paths are highlighted.` : 'The Rabbit draws three full-length straight tunnels. Each must add at least one new connection.'; }
+  else if (g.phase === 'rabbit_dig') { title = `Tunnels · ${g.used.filter(Boolean).length} / 3`; instruction = manual ? `Select a die, then click a highlighted hex next to r to choose a direction. The entire ${constructionLength(g.board, g.origin, g.dice[selectedDie])}-space tunnel is drawn in one click. Overlap is allowed, but each tunnel must add a new connection. Ground: d6 + 1. Sand: d6. Rock blocks digging. Only directions with a legal full-length tunnel are highlighted.` : 'The Rabbit draws three full-length straight tunnels. Each must add at least one new connection.'; }
   else if (g.phase === 'rabbit_roll_move') { title = 'Move the Rabbit'; instruction = 'Construction is complete. Roll one d6 for movement.'; }
   else if (g.phase === 'rabbit_move') { title = 'Move the Rabbit'; instruction = 'Follow the highlighted tunnel connections. Spend every movement point; backtracking is allowed.'; }
   else if (g.phase === 'fox_roll') { title = 'Move the Fox'; instruction = 'Roll two d4. Add the results and use the full movement total.'; }
@@ -211,7 +214,7 @@ function renderTurn() {
   });
   else { const hint = document.createElement('span'); hint.className = 'die-placeholder'; hint.textContent = g.winner ? 'The game is finished.' : g.covered ? 'Private turn' : g.phase === 'fox_roll' ? '2 × d4' : g.phase === 'rabbit_roll_move' ? '1 × d6' : '3 × d6'; tray.append(hint); }
   if (manual && g.phase.includes('roll')) { show('roll-dice', true); text('roll-dice', g.phase === 'rabbit_roll_tunnels' ? 'Roll 3 d6' : g.phase === 'fox_roll' ? 'Roll 2 d4' : 'Roll 1 d6'); }
-  if (manual && g.phase === 'rabbit_dig') {
+  if (manual && g.phase === 'rabbit_dig' && !straightRules(g)) {
     show('commit-tunnel', true); show('undo-path', true); show('dig-progress', true);
     text('commit-tunnel', `Draw tunnel · ${Math.max(0, draft.length - 1)} / ${constructionLength(g.board, g.origin, g.dice[selectedDie])}`);
     $('commit-tunnel').disabled = pending || draft.length !== constructionLength(g.board, g.origin, g.dice[selectedDie]) + 1; $('undo-path').disabled = pending || draft.length <= 1;
@@ -253,7 +256,12 @@ async function ready() { if (pending) return; pending = true; try { receive(awai
 $('handoff-ready').addEventListener('click', safe(ready)); $('cover-ready').addEventListener('click', safe(ready));
 async function cellClick(id) {
   if (pending || replayInfo || !game || !legalCells(game).includes(id)) return;
-  if (game.phase === 'rabbit_dig') { draft.push(id); render(); }
+  if (game.phase === 'rabbit_dig') {
+    if (straightRules(game)) {
+      const path = tunnelChoices(game).find(path => path[1] === id);
+      if (path) await act({ type: 'dig', die: selectedDie, path });
+    } else { draft.push(id); render(); }
+  }
   else await act({ type: 'move', to: id });
 }
 $('board').addEventListener('click', safe(e => { if (dragged) { dragged = false; return; } const cell = e.target.closest('[data-cell]'); if (cell) return cellClick(Number(cell.dataset.cell)); }));
