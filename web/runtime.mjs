@@ -43,6 +43,7 @@ export function createRuntime(runBatch) {
   return async function request(path, { method = 'GET', headers = {}, body } = {}) {
     try {
       const url = new URL(path, 'https://game.invalid'), parts = url.pathname.split('/').filter(Boolean);
+      if (parts[0] === 'api' && parts[1] === 'batches' && !runBatch) return { status: 404, data: { error: 'Playtests are available only in the local edition.' } };
       const input = typeof body === 'string' ? JSON.parse(body || '{}') : body ?? {};
       const ok = (data, status = 200) => ({ status, data });
       if (url.pathname === '/api/health') return ok({ app: 'foxes-and-rabbits-terrain', version: VERSION, rules: RULES });

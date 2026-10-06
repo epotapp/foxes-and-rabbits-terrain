@@ -6,6 +6,7 @@ import { strategyMixer } from './strategy-mixer.js';
 import { DEFAULT_MIX, RABBIT_STRATEGIES } from './rabbit-strategies.js';
 import { CURRENT_RULES, CLIENT_VERSION, normalizeGame, constructionDieLabel, currentServerURL } from './client-state.js';
 const $ = id => document.getElementById(id);
+const playtestsEnabled = document.documentElement.dataset.edition !== 'public';
 let mapPreview = null, previewRequest = 0, previewTimer = null;
 let meta, game = null, session = null, pending = false, draft = [], selectedDie = 0, zoom = 1, pan = null, autoplay = false, agentTimer = null, batch = null, batchTimer = null, replayInfo = null, replayGame = null;
 const defaultPrefs = { field: 'standard', terrain: 'open', mapseed: 'woodland-mosaic-1', rounds: 25, sight: 2, fox: 'tracker', rabbit: 'human', mix: DEFAULT_MIX, speed: '120', highlights: true, motion: false };
@@ -29,6 +30,7 @@ async function api(url, data) {
   const result = await response.json(); if (!response.ok) throw new Error(result.error || 'The request could not be completed.'); return result;
 }
 function tab(name) {
+  if (name === 'tests' && !playtestsEnabled) return;
   inMenu = false; document.body.dataset.view = name; show('main-menu', false);
   for (const id of ['game', 'tests', 'rules']) show(`${id}-tab`, id === name);
   document.querySelectorAll('.nav-tab').forEach(b => { b.classList.toggle('active', b.dataset.tab === name); b.setAttribute('aria-selected', String(b.dataset.tab === name)); });
@@ -419,7 +421,7 @@ try {
   if (saved) { try { session = JSON.parse(saved); game = await api(`/api/matches/${session.id}`); } catch { session = null; sessionStorage.removeItem('woodland-terrain-game'); } }
   if (game) { const restored = game; game = null; receive(restored); } else render();
   mainMenu();
-  const savedBatch = sessionStorage.getItem('woodland-terrain-batch'); if (savedBatch) { try { batch = await api(`/api/batches/${savedBatch}`); renderBatch(); if (batch.status === 'running') pollBatch(); } catch { sessionStorage.removeItem('woodland-terrain-batch'); } }
+  const savedBatch = sessionStorage.getItem('woodland-terrain-batch'); if (playtestsEnabled && savedBatch) { try { batch = await api(`/api/batches/${savedBatch}`); renderBatch(); if (batch.status === 'running') pollBatch(); } catch { sessionStorage.removeItem('woodland-terrain-batch'); } }
 } catch (err) { toast(`The game could not start: ${err.message}`); }
 
 // Optional browser-agent controls use the current player's filtered view and the same referee.
@@ -436,7 +438,7 @@ if (document.modelContext?.registerTool && meta) {
     if (!['roll', 'dig', 'move'].includes(input.type)) throw new Error('Choose roll, dig, or move.');
     tab('game'); await act(input); return observation();
   } });
-  await register({ name: 'run_playtest_batch', title: 'Run a batch of agent games', description: 'Starts complete AvA simulations using the selected playtest field, rounds and sight. Displays live statistics. Returns the batch id; use get_playtest_results to read progress.', inputSchema: { type: 'object', properties: { games: { type: 'integer', minimum: 1, maximum: 100000 }, fox: { type: 'string', enum: ['tracker', 'scout', 'random'] }, rabbit: { type: 'string', enum: meta.policies.rabbit.map(p => p.id) }, seed: { type: 'string', maxLength: 100 } }, required: ['games', 'fox', 'rabbit', 'seed'], additionalProperties: false }, annotations: { readOnlyHint: false }, execute: async input => {
+  if (playtestsEnabled) await register({ name: 'run_playtest_batch', title: 'Run a batch of agent games', description: 'Starts complete AvA simulations using the selected playtest field, rounds and sight. Displays live statistics. Returns the batch id; use get_playtest_results to read progress.', inputSchema: { type: 'object', properties: { games: { type: 'integer', minimum: 1, maximum: 100000 }, fox: { type: 'string', enum: ['tracker', 'scout', 'random'] }, rabbit: { type: 'string', enum: meta.policies.rabbit.map(p => p.id) }, seed: { type: 'string', maxLength: 100 } }, required: ['games', 'fox', 'rabbit', 'seed'], additionalProperties: false }, annotations: { readOnlyHint: false }, execute: async input => {
     if (!currentVersion()) throw new Error('Open the updated game to run playtests with the current agents and rules.');
     if (batch?.status === 'running') throw new Error('A batch is already running.');
     batch = await api('/api/batches', { ...input, rabbit: input.rabbit === 'mixed' ? batchMixer.profile() : input.rabbit, config: config('batch-') });
@@ -444,6 +446,6 @@ if (document.modelContext?.registerTool && meta) {
     $('batch-games').value = String(input.games); $('batch-fox').value = input.fox; $('batch-rabbit').value = input.rabbit; batchMixer.show(input.rabbit === 'mixed'); $('batch-seed').value = input.seed;
     sessionStorage.setItem('woodland-terrain-batch', batch.id); tab('tests'); renderBatch(); clearTimeout(batchTimer); batchTimer = setTimeout(pollBatch, 300); return { id: batch.id, status: batch.status, requestedGames: batch.requestedGames };
   } });
-  await register({ name: 'get_playtest_results', title: 'Read the current batch results', description: 'Returns progress and results for the batch visible in Playtests.', inputSchema: { type: 'object', properties: {}, additionalProperties: false }, annotations: { readOnlyHint: true }, execute: async () => { if (!batch) return { status: 'no_batch' }; batch = await api(`/api/batches/${batch.id}`); renderBatch(); return batch; } });
+  if (playtestsEnabled) await register({ name: 'get_playtest_results', title: 'Read the current batch results', description: 'Returns progress and results for the batch visible in Playtests.', inputSchema: { type: 'object', properties: {}, additionalProperties: false }, annotations: { readOnlyHint: true }, execute: async () => { if (!batch) return { status: 'no_batch' }; batch = await api(`/api/batches/${batch.id}`); renderBatch(); return batch; } });
   window.addEventListener('pagehide', () => lifecycle.abort(), { once: true });
 }
