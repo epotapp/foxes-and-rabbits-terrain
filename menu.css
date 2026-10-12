@@ -1,0 +1,43 @@
+/* A full-window title screen, with the illustration kept intact. */
+body[data-view="menu"] .masthead,
+body[data-view="menu"] .site-footer { display: none; }
+body[data-view="menu"] main { max-width: none; padding: 0; }
+.main-menu { max-width: none; min-height: 100svh; margin: 0; padding: clamp(24px, 3.5vw, 72px); gap: clamp(32px, 4vw, 80px); grid-template-columns: minmax(320px, .78fr) minmax(0, 1.22fr); align-items: center; background: var(--paper, #f3eddf); border-radius: 0; box-shadow: none; overflow: visible; }
+.menu-content { order: 0; align-items: flex-start; text-align: left; padding: 0; background: none; color: var(--ink); max-width: 560px; width: 100%; justify-self: center; }
+.menu-art { order: 1; display: block; background: none; width: 100%; height: auto; }
+.menu-art img { display: block; width: 100%; height: auto; object-fit: contain; border-radius: 45% 45% 8px 8px / 12% 12% 8px 8px; box-shadow: 0 16px 38px #342d231c; }
+.menu-mark { width: 48px; height: 52px; border: none; border-radius: 0; margin: 0 0 30px; background: var(--moss); color: var(--cream); clip-path: polygon(50% 0,95% 24%,95% 76%,50% 100%,5% 76%,5% 24%); font-size: 36px; transform: rotate(-5deg); }
+.menu-content h2 { font-size: clamp(60px, 6.2vw, 116px); line-height: .98; letter-spacing: -.045em; color: var(--moss); }
+.menu-content h2 i { font-size: .4em; letter-spacing: -.02em; }
+.menu-content .terrain-edition { order: -1; margin: 0 0 24px; color: var(--muted); font-size: 12px; letter-spacing: .23em; }
+.menu-mark { display: none; }
+.menu-modes { margin: 30px 0; color: var(--muted); font-size: 14px; letter-spacing: 0; line-height: 1.6; }
+.menu-modes span { padding: 0 8px; color: #aa8f61; }
+.menu-buttons { max-width: 460px; grid-template-columns: 1fr 1fr; gap: 12px; }
+.menu-buttons button { min-height: 58px; border-radius: 5px; font-size: 18px; transition: background .15s, transform .15s; }
+.menu-buttons .menu-primary { grid-column: 1 / -1; min-height: 74px; padding: 18px 25px; display: flex; align-items: center; justify-content: space-between; text-align: left; font-family: var(--serif); font-size: 30px; background: var(--moss); color: var(--cream); border: 1px solid var(--moss); box-shadow: inset 0 0 0 3px #f3eddf12; }
+.menu-primary::after { content: '↗'; font-family: var(--sans); font-size: 28px; font-weight: 400; }
+.menu-primary:hover { background: var(--deep); transform: translateY(-2px); }
+.menu-secondary { color: var(--ink); background: transparent; border: 1px solid #c7baa0; }
+.menu-secondary:hover { background: #e8dfcc; border-color: #8e9b7b; }
+#menu-tests { grid-column: 1 / -1; }
+.menu-buttons button:focus-visible { outline: 3px solid #a7492c; outline-offset: 4px; }
+.menu-foot { color: var(--muted); margin: 28px 0 0; font-size: 17px; line-height: 1.6; }
+@media (max-width: 900px) {
+  .main-menu { min-height: 100svh; grid-template-columns: 1fr; gap: 28px; padding: 28px 24px 40px; }
+  .menu-content { max-width: 560px; }
+  .menu-content h2 { font-size: clamp(52px, 10vw, 80px); }
+  .menu-content h2 br { display: none; }
+  .menu-content .terrain-edition { margin-bottom: 20px; }
+  .menu-art { width: min(100%, 560px); justify-self: center; }
+  .menu-art img { border-radius: 8px; }
+  .menu-modes { margin: 20px 0; font-size: 13px; }
+  .menu-buttons { max-width: none; }
+  .menu-foot { margin-top: 20px; font-size: 15px; }
+}
+@media (max-width: 420px) {
+  .main-menu { padding: 26px 20px; }
+  .menu-content h2 br { display: block; }
+  .menu-buttons button { min-height: 52px; }
+  .menu-buttons .menu-primary { min-height: 66px; font-size: 27px; }
+}
