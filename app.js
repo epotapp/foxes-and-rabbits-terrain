@@ -1,4 +1,5 @@
 import { gameFetch as fetch } from './transport.js';
+import { mostOpenDie } from './tunnel-selection.js';
 import { terrainFill, terrainSVG } from './terrain-art.js';
 import { straightPaths, constructionLength, sandConnection } from './rules.js';
 import { setupGifExport } from './gif-export.js';
@@ -232,7 +233,7 @@ function receive(g) {
   g = normalizeGame(g);
   const changed = !game || game.phase !== g.phase || game.round !== g.round || JSON.stringify(game.used) !== JSON.stringify(g.used);
   game = g;
-  if (changed) { selectedDie = Math.max(0, g.used.findIndex(x => !x)); draft = g.origin === null ? [] : [g.origin]; pan = null; }
+  if (changed) { selectedDie = g.phase === 'rabbit_dig' && straightRules(g) && isManual(g) ? mostOpenDie(g) : Math.max(0, g.used.findIndex(x => !x)); draft = g.origin === null ? [] : [g.origin]; pan = null; }
   if (g.winner) autoplay = false;
   render(); scheduleAgent();
 }
